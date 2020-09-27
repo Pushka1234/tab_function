@@ -1,0 +1,108 @@
+unit Unit1;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, Buttons, ExtCtrls, TeeProcs, TeEngine, Chart, Series,
+  ComCtrls, Vcl.Grids, VclTee.TeeGDIPlus, Math;
+
+
+
+type
+  TForm1 = class(TForm)
+    GroupBox1: TGroupBox;
+    Edit1: TEdit;
+    Edit2: TEdit;
+    Edit3: TEdit;
+    Label2: TLabel;
+    Label3: TLabel;
+    Label4: TLabel;
+    ProgressBar1: TProgressBar;
+    StringGrid1: TStringGrid;
+    Button1: TButton;
+    PageControl1: TPageControl;
+    TabSheet1: TTabSheet;
+    Chart1: TChart;
+    Series1: TLineSeries;
+    Series2: TLineSeries;
+    TabSheet4: TTabSheet;
+    Label1: TLabel;
+    procedure Button1Click(Sender: TObject);
+
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  Form1: TForm1;
+  MaxY, MinY, MaxX, MinX,eps,
+  A,B,x0,
+x1,D,y,x: double;
+  n: integer;
+implementation
+
+{$R *.dfm}
+
+function f1(x:double):double;
+begin
+ // f1:= Power(x,5) * Power(exp, -x/sin(x));
+ f1:= exp(5*ln(x))*exp(-x/sin(x));
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+var
+  t: double;
+  i: integer;
+  Prom: string;
+  f: TextFile;
+begin
+
+    AssignFile(f,'');
+  try
+    ReWrite(f);
+  except
+    x0:=StrToFloat(Edit1.Text);
+    x1:=StrToFloat(Edit2.Text);
+    D :=StrToFloat(Edit3.Text);
+    eps:=1e-3;
+
+    Chart1.Series[0].Clear;
+
+    StringGrid1.Cells[0,0]:='  t';
+    StringGrid1.Cells[1,0]:='  Y';
+    StringGrid1.RowCount:=trunc((X1-X0)/D);
+
+    t:=x0; i:=1;
+    MaxY:=f1(t); MinY:=f1(t);
+    while t<=x1 do begin
+      Application.ProcessMessages;
+      ProgressBar1.Position:=Round(t/(x1-x0)*100);
+      y:=f1(t);
+
+      StringGrid1.Cells[0,i]:=FloatToStrF(t,ffFixed,10,4);
+      StringGrid1.Cells[1,i]:=FloatToStrF(Y,ffFixed,10,4);
+      Chart1.Series[0].AddXY(t,y);
+
+      if Y>=MaxY then begin
+          MaxY:=Y; MaxX:=t;
+      end;
+      if Y<=MinY then begin
+          MinY:=X; MinX:=t;
+      end;
+
+      t:=t+D; i:=i+1;
+    end;
+    Label1.Caption:='Максимум при шаге Dx='+FloatToStrF(D,ffFixed,8,4)+' X='+
+                 FloatToStrF(MaxX,ffFixed,8,4)+' Y='+
+                 FloatToStrF(MaxY,ffFixed,8,4);
+    Prom:='Рис_1';
+    Chart1.SaveToBitmapFile(Prom);
+    Chart1.CopyToClipboardBitmap;
+   // CloseFile(f);
+
+end;
+end;
+end.
